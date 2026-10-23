@@ -1,5 +1,5 @@
 {
-  "repo": "teddashh/clawd-lobster",
+  "repo": "TED-H-com/clawd-lobster",
   "slug": "clawd-lobster",
   "name": "Clawd-Lobster",
   "mark": "CL",
@@ -44,7 +44,7 @@
       }
     },
     "secondary": {
-      "href": "https://github.com/teddashh/clawd-lobster",
+      "href": "https://github.com/TED-H-com/clawd-lobster",
       "label": {
         "en": "View source",
         "zh": "查看原始碼"
@@ -507,14 +507,14 @@
       "zh": "需要 Python 3.10 以上（記憶伺服器要 3.11）、Git，以及已登入的 Claude Code CLI。只有要用 Hub 時才需要 GitHub 帳號與 gh CLI。目前沒有 PyPI 套件。"
     },
     "primary": {
-      "href": "https://github.com/teddashh/clawd-lobster#quick-start",
+      "href": "https://github.com/TED-H-com/clawd-lobster#quick-start",
       "label": {
         "en": "README quick start",
         "zh": "README 快速開始"
       }
     },
     "secondary": {
-      "href": "https://github.com/teddashh/clawd-lobster/tree/master/skills",
+      "href": "https://github.com/TED-H-com/clawd-lobster/tree/master/skills",
       "label": {
         "en": "Browse the skills",
         "zh": "瀏覽所有 skill"
@@ -527,8 +527,8 @@
           "zh": "Clone 並安裝"
         },
         "body": {
-          "en": "Clone <a href=\"https://github.com/teddashh/clawd-lobster\">github.com/teddashh/clawd-lobster</a>, then install it with the agent extra. Spec Squad needs claude-agent-sdk, which a plain <code>pip install -e .</code> leaves out.",
-          "zh": "先 clone <a href=\"https://github.com/teddashh/clawd-lobster\">github.com/teddashh/clawd-lobster</a>，再連同 agent 這組選用相依套件一起安裝。Spec Squad 需要 claude-agent-sdk，單純 <code>pip install -e .</code> 不會裝。"
+          "en": "Clone <a href=\"https://github.com/TED-H-com/clawd-lobster\">github.com/TED-H-com/clawd-lobster</a>, then install it with the agent extra. Spec Squad needs claude-agent-sdk, which a plain <code>pip install -e .</code> leaves out.",
+          "zh": "先 clone <a href=\"https://github.com/TED-H-com/clawd-lobster\">github.com/TED-H-com/clawd-lobster</a>，再連同 agent 這組選用相依套件一起安裝。Spec Squad 需要 claude-agent-sdk，單純 <code>pip install -e .</code> 不會裝。"
         },
         "code": "cd clawd-lobster\npip install -e \".[agent]\""
       },
@@ -670,14 +670,14 @@
   ],
   "links": [
     {
-      "href": "https://github.com/teddashh/clawd-lobster/blob/master/CHANGELOG.md",
+      "href": "https://github.com/TED-H-com/clawd-lobster/blob/master/CHANGELOG.md",
       "label": {
         "en": "Changelog",
         "zh": "變更紀錄"
       }
     },
     {
-      "href": "https://github.com/teddashh/clawd-lobster/tree/master/skills",
+      "href": "https://github.com/TED-H-com/clawd-lobster/tree/master/skills",
       "label": {
         "en": "Skills",
         "zh": "Skill 目錄"
@@ -691,7 +691,7 @@
       }
     },
     {
-      "href": "https://github.com/teddashh/clawd-lobster/blob/master/README.zh-TW.md",
+      "href": "https://github.com/TED-H-com/clawd-lobster/blob/master/README.zh-TW.md",
       "label": {
         "en": "中文 README",
         "zh": "中文 README"

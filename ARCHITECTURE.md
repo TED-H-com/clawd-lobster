@@ -2,6 +2,8 @@
 
 Detailed project structure and internals. For overview, see [README.md](README.md).
 
+> **For a deep dive into the architecture, event loop lifecycle, and a guide for authoring custom handlers, please see [Architecture, Event Loop, and Handlers Guide](docs/architecture-and-handlers.md).**
+
 ## Full File Tree
 
 ```

@@ -11,6 +11,9 @@ import json, queue, re, threading, time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from claude_agent_sdk import (
+    query, ClaudeAgentOptions, AssistantMessage, ResultMessage, TextBlock)
+
 MAX_REVIEW_ROUNDS = 5
 SQUAD_STATE_FILE = ".spec-squad.json"
 
@@ -153,10 +156,7 @@ async def _run_agent(
     role: str, system_prompt: str, prompt: str, workspace: Path,
     allowed_tools: list[str] | None = None,
 ) -> str:
-    """Run one agent via claude_agent_sdk.query(). Lazy import."""
-    from claude_agent_sdk import (
-        query, ClaudeAgentOptions, AssistantMessage, ResultMessage, TextBlock)
-
+    """Run one agent via claude_agent_sdk.query()."""
     if allowed_tools is None:
         allowed_tools = ["Read", "Glob", "Grep"]
     push_sse("agent_start", {"role": role})
@@ -184,8 +184,6 @@ async def _run_agent(
 
 async def run_discovery_turn(user_message: str, workspace: Path | None) -> str:
     """Single discovery chat turn. Returns Claude's response."""
-    from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
-
     with _disc_lock:
         _disc_history.append({"role": "user", "content": user_message})
         history = list(_disc_history)

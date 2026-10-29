@@ -30,11 +30,6 @@ import time
 from pathlib import Path
 from typing import Any
 
-from claude_agent_sdk import (
-    query, ClaudeAgentOptions, AssistantMessage, ResultMessage,
-    SystemMessage, TextBlock, ToolUseBlock,
-)
-
 # ---------------------------------------------------------------------------
 # Core dispatch
 # ---------------------------------------------------------------------------
@@ -67,6 +62,11 @@ async def dispatch(
     Returns:
         DispatchResult with text, json_blocks, usage, and metadata.
     """
+    from claude_agent_sdk import (
+        query, ClaudeAgentOptions, AssistantMessage, ResultMessage,
+        SystemMessage, TextBlock, ToolUseBlock,
+    )
+
     if tools is None:
         tools = ["Read", "Glob", "Grep"]
 

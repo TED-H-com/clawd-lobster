@@ -95,5 +95,44 @@ class TestAgentDispatch(unittest.IsolatedAsyncioTestCase):
         result = await dispatch("timeout prompt", timeout_seconds=0.1)
         self.assertIn("[TIMEOUT after 0.1s]", result.text)
 
+    @patch("claude_agent_sdk.query")
+    async def test_initialization_latency(self, mock_query):
+        from claude_agent_sdk import AssistantMessage, TextBlock
+        import time
+
+        async def mock_query_gen(*args, **kwargs):
+            # Fast mock generation
+            yield AssistantMessage(content=[TextBlock(text="Benchmarking latency.")], model="test-model")
+
+        mock_query.side_effect = mock_query_gen
+
+        # We measure the time dispatch() takes when the query executes instantly.
+        # This isolates the initialization and dispatch setup overhead.
+        start = time.perf_counter()
+        result = await dispatch("latency check prompt")
+        duration = time.perf_counter() - start
+
+        self.assertTrue(result.ok)
+        self.assertLess(duration, 5.0, f"Initialization latency {duration:.4f}s exceeds 5.0s")
+
+    @patch("claude_agent_sdk.query")
+    async def test_transcript_tailing_performance(self, mock_query):
+        from claude_agent_sdk import AssistantMessage, TextBlock
+        import time
+
+        async def mock_query_gen(*args, **kwargs):
+            for i in range(1000):
+                yield AssistantMessage(content=[TextBlock(text=f"Chunk {i} ")], model="test-model")
+
+        mock_query.side_effect = mock_query_gen
+
+        start = time.perf_counter()
+        result = await dispatch("tailing prompt")
+        duration = time.perf_counter() - start
+
+        self.assertTrue(result.ok)
+        self.assertEqual(len(result.text.split("Chunk")), 1001)
+        self.assertLess(duration, 5.0, f"Transcript tailing performance {duration:.4f}s exceeds 5.0s")
+
 if __name__ == "__main__":
     unittest.main()

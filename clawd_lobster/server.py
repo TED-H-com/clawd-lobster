@@ -36,7 +36,7 @@ import threading
 import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 
 from . import pages
 from . import pages_onboarding
@@ -107,15 +107,22 @@ def _read_json(path: Path, default=None):
         return default
 
 
-def _write_json(path: Path, data: dict) -> None:
+def _write_json(path: Path, data: dict, restricted: bool = False) -> None:
     """Write JSON file with atomic rename."""
     import platform
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
-    tmp.write_text(
-        json.dumps(data, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    content = json.dumps(data, indent=2, ensure_ascii=False) + "\n"
+    content_bytes = content.encode("utf-8")
+
+    if restricted and platform.system() != "Windows":
+        # Create tmp file securely with 0o600 permissions
+        fd = os.open(str(tmp), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "wb") as f:
+            f.write(content_bytes)
+    else:
+        tmp.write_bytes(content_bytes)
+
     if platform.system() == "Windows" and path.exists():
         path.unlink()
     tmp.rename(path)
@@ -419,13 +426,24 @@ class _Handler(BaseHTTPRequestHandler):
         MIME = {".png": "image/png", ".webp": "image/webp",
                 ".jpg": "image/jpeg", ".svg": "image/svg+xml",
                 ".ico": "image/x-icon", ".css": "text/css", ".js": "text/javascript"}
-        name = path.split("/assets/", 1)[-1]
+        name = unquote(path.split("/assets/", 1)[-1])
         # Safety: no path traversal
         if ".." in name or "/" in name or "\\" in name:
             self.send_error(403)
             return
         asset_dir = Path(__file__).resolve().parent / "assets"
-        fp = asset_dir / name
+        fp = (asset_dir / name).resolve()
+        try:
+            if not fp.is_relative_to(asset_dir):
+                self.send_error(403)
+                return
+        except AttributeError:
+            # Python < 3.9 fallback
+            try:
+                fp.relative_to(asset_dir)
+            except ValueError:
+                self.send_error(403)
+                return
         if not fp.exists() or not fp.is_file():
             self.send_error(404)
             return
@@ -481,11 +499,23 @@ class _Handler(BaseHTTPRequestHandler):
 
     def _serve_screenshot(self, path: str) -> None:
         """Serve screenshot files from docs/screenshots/."""
-        name = path.split("/screenshots/", 1)[-1]
+        name = unquote(path.split("/screenshots/", 1)[-1])
         if ".." in name or "/" in name or "\\" in name:
             self.send_error(403)
             return
-        fp = REPO_DIR / "docs" / "screenshots" / name
+        screenshots_dir = REPO_DIR / "docs" / "screenshots"
+        fp = (screenshots_dir / name).resolve()
+        try:
+            if not fp.is_relative_to(screenshots_dir):
+                self.send_error(403)
+                return
+        except AttributeError:
+            # Python < 3.9 fallback
+            try:
+                fp.relative_to(screenshots_dir)
+            except ValueError:
+                self.send_error(403)
+                return
         if not fp.exists() or not fp.is_file():
             self.send_error(404)
             return
@@ -798,12 +828,7 @@ class _Handler(BaseHTTPRequestHandler):
             _write_json(oracle_secrets, {
                 "password": body.get("password", ""),
                 "wallet_password": body.get("wallet_password", ""),
-            })
-            # Restrict permissions (Unix only)
-            try:
-                oracle_secrets.chmod(0o600)
-            except OSError:
-                pass
+            }, restricted=True)
 
             # Save atomically
             config_file.parent.mkdir(parents=True, exist_ok=True)

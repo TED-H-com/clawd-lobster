@@ -36,7 +36,7 @@ import threading
 import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 
 from . import pages
 from . import pages_onboarding
@@ -419,11 +419,12 @@ class _Handler(BaseHTTPRequestHandler):
         MIME = {".png": "image/png", ".webp": "image/webp",
                 ".jpg": "image/jpeg", ".svg": "image/svg+xml",
                 ".ico": "image/x-icon", ".css": "text/css", ".js": "text/javascript"}
-        name = path.split("/assets/", 1)[-1]
+        name = unquote(path.split("/assets/", 1)[-1])
         # Safety: no path traversal
         if ".." in name or "/" in name or "\\" in name:
             self.send_error(403)
             return
+        # By this point name is guaranteed not to contain .. or / or \, so resolving it is safe
         asset_dir = Path(__file__).resolve().parent / "assets"
         fp = asset_dir / name
         if not fp.exists() or not fp.is_file():
@@ -481,10 +482,11 @@ class _Handler(BaseHTTPRequestHandler):
 
     def _serve_screenshot(self, path: str) -> None:
         """Serve screenshot files from docs/screenshots/."""
-        name = path.split("/screenshots/", 1)[-1]
+        name = unquote(path.split("/screenshots/", 1)[-1])
         if ".." in name or "/" in name or "\\" in name:
             self.send_error(403)
             return
+        # By this point name is guaranteed not to contain .. or / or \, so resolving it is safe
         fp = REPO_DIR / "docs" / "screenshots" / name
         if not fp.exists() or not fp.is_file():
             self.send_error(404)
@@ -795,11 +797,20 @@ class _Handler(BaseHTTPRequestHandler):
             secrets_dir = Path.home() / ".clawd-lobster" / "credentials"
             secrets_dir.mkdir(parents=True, exist_ok=True)
             oracle_secrets = secrets_dir / "oracle.json"
+
+            # Pre-create file with restricted permissions (0o600) securely
+            # to avoid race conditions exposing credentials during creation.
+            try:
+                fd = os.open(str(oracle_secrets), os.O_CREAT | os.O_WRONLY | os.O_EXCL, 0o600)
+                os.close(fd)
+            except FileExistsError:
+                pass
+
             _write_json(oracle_secrets, {
                 "password": body.get("password", ""),
                 "wallet_password": body.get("wallet_password", ""),
             })
-            # Restrict permissions (Unix only)
+            # Restrict permissions explicitly in case pre-creation didn't run
             try:
                 oracle_secrets.chmod(0o600)
             except OSError:

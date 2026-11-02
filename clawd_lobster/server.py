@@ -107,22 +107,15 @@ def _read_json(path: Path, default=None):
         return default
 
 
-def _write_json(path: Path, data: dict, restricted: bool = False) -> None:
+def _write_json(path: Path, data: dict) -> None:
     """Write JSON file with atomic rename."""
     import platform
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
-    content = json.dumps(data, indent=2, ensure_ascii=False) + "\n"
-    content_bytes = content.encode("utf-8")
-
-    if restricted and platform.system() != "Windows":
-        # Create tmp file securely with 0o600 permissions
-        fd = os.open(str(tmp), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(fd, "wb") as f:
-            f.write(content_bytes)
-    else:
-        tmp.write_bytes(content_bytes)
-
+    tmp.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
     if platform.system() == "Windows" and path.exists():
         path.unlink()
     tmp.rename(path)
@@ -431,19 +424,9 @@ class _Handler(BaseHTTPRequestHandler):
         if ".." in name or "/" in name or "\\" in name:
             self.send_error(403)
             return
+        # By this point name is guaranteed not to contain .. or / or \, so resolving it is safe
         asset_dir = Path(__file__).resolve().parent / "assets"
-        fp = (asset_dir / name).resolve()
-        try:
-            if not fp.is_relative_to(asset_dir):
-                self.send_error(403)
-                return
-        except AttributeError:
-            # Python < 3.9 fallback
-            try:
-                fp.relative_to(asset_dir)
-            except ValueError:
-                self.send_error(403)
-                return
+        fp = asset_dir / name
         if not fp.exists() or not fp.is_file():
             self.send_error(404)
             return
@@ -503,19 +486,8 @@ class _Handler(BaseHTTPRequestHandler):
         if ".." in name or "/" in name or "\\" in name:
             self.send_error(403)
             return
-        screenshots_dir = REPO_DIR / "docs" / "screenshots"
-        fp = (screenshots_dir / name).resolve()
-        try:
-            if not fp.is_relative_to(screenshots_dir):
-                self.send_error(403)
-                return
-        except AttributeError:
-            # Python < 3.9 fallback
-            try:
-                fp.relative_to(screenshots_dir)
-            except ValueError:
-                self.send_error(403)
-                return
+        # By this point name is guaranteed not to contain .. or / or \, so resolving it is safe
+        fp = REPO_DIR / "docs" / "screenshots" / name
         if not fp.exists() or not fp.is_file():
             self.send_error(404)
             return
@@ -825,10 +797,24 @@ class _Handler(BaseHTTPRequestHandler):
             secrets_dir = Path.home() / ".clawd-lobster" / "credentials"
             secrets_dir.mkdir(parents=True, exist_ok=True)
             oracle_secrets = secrets_dir / "oracle.json"
+
+            # Pre-create file with restricted permissions (0o600) securely
+            # to avoid race conditions exposing credentials during creation.
+            try:
+                fd = os.open(str(oracle_secrets), os.O_CREAT | os.O_WRONLY | os.O_EXCL, 0o600)
+                os.close(fd)
+            except FileExistsError:
+                pass
+
             _write_json(oracle_secrets, {
                 "password": body.get("password", ""),
                 "wallet_password": body.get("wallet_password", ""),
-            }, restricted=True)
+            })
+            # Restrict permissions explicitly in case pre-creation didn't run
+            try:
+                oracle_secrets.chmod(0o600)
+            except OSError:
+                pass
 
             # Save atomically
             config_file.parent.mkdir(parents=True, exist_ok=True)

@@ -227,7 +227,7 @@ GitHub 是控制面。Git 是协议。
 
 ```
 Skills (the what)      ->  14 skills with manifests (skill.json), instructions, gotchas
-Tools (the how)        ->  28 MCP tools + Claude Code native tools + 22 onboarding APIs
+Tools (the how)        ->  27 MCP tools + Claude Code native tools + 22 onboarding APIs
 Hooks (the when)       ->  OS scheduler, git hooks, PostToolUse, Stop hooks
 Memory (the brain)     ->  SQLite Ledger + Git Wiki + Oracle Vault (4-layer)
 Operations (the cycle) ->  INGEST / QUERY / LINT (continuous knowledge lifecycle)

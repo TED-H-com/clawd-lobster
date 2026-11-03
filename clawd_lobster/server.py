@@ -1,9 +1,15 @@
 """
-clawd_lobster.server: HTTP server for the web UI.
+clawd_lobster.server: HTTP server for the web UI and thin server API.
 
 Serves the onboarding wizard, workspace dashboard, and spec-squad interface
 on localhost. Uses stdlib http.server -- no external dependencies.
 Suppresses request logs for clean output.
+
+This module acts as a "thin server", routing HTTP requests to backend APIs
+(like onboarding intents and vault state) while avoiding nested asynchronous
+event loops when triggering the Claude Agent SDK. Synchronous handlers here
+can safely call `agent_dispatch.dispatch_sync()` which spins up a localized,
+isolated asyncio event loop.
 
 Security model. The goal is that no web page the user happens to visit can
 drive this server (CSRF) or read from it through DNS rebinding:
@@ -18,12 +24,6 @@ drive this server (CSRF) or read from it through DNS rebinding:
   every HTML page as <meta name="clawd-token">, is written to
   ~/.clawd-lobster/server-<port>.token (mode 0600) for local CLI clients,
   and is compared with hmac.compare_digest.
-* No Access-Control-* headers are ever sent, and OPTIONS (CORS preflight)
-  is always answered with 403.
-* HTML responses carry Cache-Control: no-store and refuse to be framed.
-
-The token protects against web pages, not against other programs running
-on the same machine: any local process can read it from a served page.
 """
 
 import hmac

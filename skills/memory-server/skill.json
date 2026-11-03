@@ -4,19 +4,27 @@
   "description": "Always-on memory backbone. Triggers automatically on any memory operation: storing decisions, recording knowledge, tracking TODOs, learning skills, searching past context, or running audit reports. Core dependency for all other skills.",
   "version": "0.4.0",
   "category": "core",
-  "tags": ["memory", "mcp", "sqlite", "oracle", "search", "audit"],
+  "tags": [
+    "memory",
+    "mcp",
+    "sqlite",
+    "oracle",
+    "search",
+    "audit"
+  ],
   "kind": "mcp-server",
   "alwaysOn": true,
   "defaultEnabled": true,
-  "icon": "🧠",
-
+  "icon": "\ud83e\udde0",
   "mcp": {
     "serverName": "clawd-memory",
     "command": "python",
-    "args": ["-m", "mcp_memory.server"],
+    "args": [
+      "-m",
+      "mcp_memory.server"
+    ],
     "cwd": "."
   },
-
   "permissions": {
     "allow": [
       "mcp__clawd-memory__memory_store",
@@ -29,6 +37,7 @@
       "mcp__clawd-memory__memory_get_summary",
       "mcp__clawd-memory__memory_delete",
       "mcp__clawd-memory__memory_search",
+      "mcp__clawd-memory__memory_propose_correction",
       "mcp__clawd-memory__memory_reinforce",
       "mcp__clawd-memory__memory_learn_skill",
       "mcp__clawd-memory__memory_list_skills",
@@ -47,7 +56,6 @@
       "mcp__clawd-memory__memory_todo_search"
     ]
   },
-
   "onboarding": {
     "tier": "required",
     "phase": "skills_required",
@@ -56,7 +64,9 @@
     "summary": "Your AI's long-term memory. Stores decisions, learnings, and skills in a local SQLite database.",
     "why_it_matters": "Every other skill depends on this. Without memory, Claude forgets everything between sessions.",
     "estimated_minutes": 2,
-    "depends_on": ["foundation.workspace_root"],
+    "depends_on": [
+      "foundation.workspace_root"
+    ],
     "facts_schema": {
       "package_installed": "boolean",
       "db_initialized": "boolean",
@@ -64,15 +74,55 @@
       "health_check_passed": "boolean"
     },
     "steps": [
-      {"id": "install_package", "label": "Install memory server", "kind": "command", "required": true, "command": {"all": "pip install -e skills/memory-server"}, "success_sets": ["package_installed"]},
-      {"id": "init_db", "label": "Initialize database", "kind": "command", "required": true, "command": {"all": "python scripts/init_db.py"}, "success_sets": ["db_initialized"]},
-      {"id": "register_mcp", "label": "Register MCP server", "kind": "command", "required": true, "command": {"all": "python scripts/skill-manager.py install memory-server"}, "success_sets": ["mcp_registered"]},
-      {"id": "verify", "label": "Verify memory responds", "kind": "probe", "required": true, "probe": "memory-server", "success_sets": ["health_check_passed"]}
+      {
+        "id": "install_package",
+        "label": "Install memory server",
+        "kind": "command",
+        "required": true,
+        "command": {
+          "all": "pip install -e skills/memory-server"
+        },
+        "success_sets": [
+          "package_installed"
+        ]
+      },
+      {
+        "id": "init_db",
+        "label": "Initialize database",
+        "kind": "command",
+        "required": true,
+        "command": {
+          "all": "python scripts/init_db.py"
+        },
+        "success_sets": [
+          "db_initialized"
+        ]
+      },
+      {
+        "id": "register_mcp",
+        "label": "Register MCP server",
+        "kind": "command",
+        "required": true,
+        "command": {
+          "all": "python scripts/skill-manager.py install memory-server"
+        },
+        "success_sets": [
+          "mcp_registered"
+        ]
+      },
+      {
+        "id": "verify",
+        "label": "Verify memory responds",
+        "kind": "probe",
+        "required": true,
+        "probe": "memory-server",
+        "success_sets": [
+          "health_check_passed"
+        ]
+      }
     ]
   },
-
   "credentials": [],
-
   "configSchema": {
     "type": "object",
     "properties": {
@@ -90,15 +140,17 @@
     "oracle_enabled": false,
     "embeddings_enabled": false
   },
-
   "healthCheck": {
     "type": "mcp-ping",
     "intervalSeconds": 300
   },
-
   "dependencies": {
     "skills": [],
-    "system": ["python"],
-    "python": ["fastmcp>=3.0,<4.0"]
+    "system": [
+      "python"
+    ],
+    "python": [
+      "fastmcp>=3.0,<4.0"
+    ]
   }
 }

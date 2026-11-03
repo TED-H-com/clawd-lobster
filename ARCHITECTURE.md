@@ -9,7 +9,7 @@ Detailed project structure and internals. For overview, see [README.md](README.m
 ```
 clawd-lobster/
 ├── skills/                          Skill modules (each with skill.json manifest)
-│   ├── memory-server/               32-tool MCP memory with salience + evolution
+│   ├── memory-server/               27-tool MCP memory with salience + evolution
 │   │   ├── mcp_memory/              Python package (pip install -e .)
 │   │   └── skill.json               Manifest
 │   ├── connect-odoo/                Odoo ERP integration (XML-RPC + poller)
@@ -71,7 +71,7 @@ clawd-lobster/
 
 | Layer | What | Lines | RAM | When |
 |-------|------|-------|-----|------|
-| **Runtime** | MCP Memory Server (32 tools + SQLite) | ~1,400 | ~25 MB | Always on |
+| **Runtime** | MCP Memory Server (27 tools + SQLite) | ~1,400 | ~25 MB | Always on |
 | **Runtime** | Odoo Connector (if enabled) | ~280 | ~22 MB | When enabled |
 | **Cron** | evolve-tick (proposal generator) | ~465 | ~20 MB peak | Every 2h, then exits |
 | **Cron** | heartbeat + sync | ~300 | ~5 MB peak | Every 30min, then exits |

@@ -102,7 +102,8 @@ def _read_json(path: Path, default=None):
     if not path.exists():
         return default
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
     except (json.JSONDecodeError, OSError):
         return default
 

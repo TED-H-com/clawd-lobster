@@ -211,6 +211,16 @@ For the file tree and runtime details, see [ARCHITECTURE.md](ARCHITECTURE.md). S
 
 ---
 
+## Developer Documentation
+
+For developers looking to integrate with or extend Clawd-Lobster, please refer to the following documentation:
+
+- [API Reference](docs/api-reference.md): Outlines the core HTTP endpoints and internal Python APIs.
+- [Developer Guide](docs/developer-guide.md): Provides examples for interacting with core modules programmatically.
+- [Architecture & Handlers](docs/architecture-and-handlers.md): Deep dive into the event loop, state intents, and custom handlers.
+
+---
+
 ## CLI reference
 
 | Command | What it does |

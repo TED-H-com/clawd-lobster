@@ -104,6 +104,26 @@ class ServerTestCase(unittest.TestCase):
         self.assertFalse(any(h.lower().startswith("access-control-") for h in headers))
 
 
+class TestAssets(ServerTestCase):
+
+    def test_path_traversal_is_blocked(self):
+        # 1. Obvious traversal
+        status, _, _ = self.send("GET", "/assets/../foo")
+        self.assertEqual(status, 403)
+
+        # 2. Encoded traversal
+        status, _, _ = self.send("GET", "/assets/%2e%2e/foo")
+        self.assertEqual(status, 403)
+
+        # 3. Encoded slashes
+        status, _, _ = self.send("GET", "/assets/%2fetc%2fpasswd")
+        self.assertEqual(status, 403)
+
+        # 4. Same for screenshots
+        status, _, _ = self.send("GET", "/screenshots/%2e%2e/foo")
+        self.assertEqual(status, 403)
+
+
 class TestPages(ServerTestCase):
 
     def test_pages_carry_the_token_and_refuse_caching_and_framing(self):

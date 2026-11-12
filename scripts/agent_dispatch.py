@@ -93,7 +93,7 @@ async def dispatch(
     tool_calls: list[dict] = []
     session_id: str | None = None
     usage_total: dict[str, int] = {"input_tokens": 0, "output_tokens": 0}
-    t0 = time.time()
+    t0 = time.perf_counter()
 
     async def _run_query():
         async for msg in query(
@@ -129,7 +129,7 @@ async def dispatch(
 
     session_id = session_id_holder[0] if session_id_holder else None
 
-    elapsed = round(time.time() - t0, 1)
+    elapsed = round(time.perf_counter() - t0, 1)
     full_text = "\n".join(text_parts)
 
     # Extract JSON blocks from output (backward compat with evolve-tick pattern)
@@ -218,6 +218,8 @@ _JSON_BLOCK_RE = re.compile(r"```json\s*\n(.*?)\n```", re.DOTALL)
 
 def _extract_json_blocks(text: str) -> list[dict]:
     """Extract ```json ... ``` blocks from text, parse each as JSON."""
+    if "```json" not in text:
+        return []
     blocks = []
     for match in _JSON_BLOCK_RE.finditer(text):
         try:

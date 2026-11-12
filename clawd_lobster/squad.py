@@ -30,20 +30,27 @@ def load_state(workspace: Path) -> dict:
     f = workspace / SQUAD_STATE_FILE
     if f.exists():
         try:
-            return json.loads(f.read_text(encoding="utf-8"))
+            with open(f, "r", encoding="utf-8") as file:
+                return json.load(file)
         except (json.JSONDecodeError, OSError):
             pass
     return {}
 
 def save_state(workspace: Path, state: dict) -> None:
-    (workspace / SQUAD_STATE_FILE).write_text(
-        json.dumps(state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    with open(workspace / SQUAD_STATE_FILE, "w", encoding="utf-8") as file:
+        json.dump(state, file, indent=2, ensure_ascii=False)
+        file.write("\n")
 
 # ── JSON signal extraction ─────────────────────────────────────────────────
 
+_JSON_SIGNAL_PATS = [
+    re.compile(r'```json\s*\n({[^`]*?})\s*\n```', re.DOTALL),
+    re.compile(r'({\"(?:status|verdict)\"[^}]*})', re.DOTALL)
+]
+
 def extract_json_signal(output: str) -> dict | None:
-    for pat in (r'```json\s*\n({[^`]*?})\s*\n```', r'({\"(?:status|verdict)\"[^}]*})'):
-        m = re.findall(pat, output, re.DOTALL)
+    for pat in _JSON_SIGNAL_PATS:
+        m = pat.findall(output)
         if m:
             try:
                 return json.loads(m[-1])
@@ -51,10 +58,12 @@ def extract_json_signal(output: str) -> dict | None:
                 continue
     return None
 
+_DISCOVERY_DATA_PAT = re.compile(r'```json\s*\n({[^`]*})\s*\n```', re.DOTALL)
+
 def extract_discovery_data(response: str) -> dict | None:
     if "DISCOVERY_COMPLETE" not in response:
         return None
-    m = re.search(r'```json\s*\n({[^`]*})\s*\n```', response, re.DOTALL)
+    m = _DISCOVERY_DATA_PAT.search(response)
     if m:
         try:
             return json.loads(m.group(1))

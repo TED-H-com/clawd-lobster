@@ -3,12 +3,20 @@ agent_dispatch.py: Unified sub-agent dispatch using Claude Agent SDK.
 
 Replaces subprocess.run(["claude", "-p", ...]) with native Agent SDK query().
 Provides both async and sync interfaces for backward compatibility.
+The SDK integration pattern manages the asynchronous event loop carefully:
+- `dispatch()` is the core async function enforcing a strict timeout via `asyncio.wait_for()`.
+- `dispatch_sync()` spins up a localized event loop to safely trigger agents
+  from synchronous contexts like the HTTP server, enforcing thread isolation.
+  It raises a RuntimeError if called from within an existing event loop.
+For production code such as HTTP handlers or legacy sync scripts, you should
+use `dispatch_sync()` safely outside async contexts. Keep the optional
+claude_agent_sdk imports lazy.
 
 Usage:
-    # Async (preferred)
+    # Async (preferred, must be inside an event loop)
     result = await dispatch(prompt, cwd="/path/to/workspace")
 
-    # Sync (for scripts that can't use async)
+    # Sync (for scripts and synchronous handlers that can't use async)
     result = dispatch_sync(prompt, cwd="/path/to/workspace")
 
     # With Vault MCP tools

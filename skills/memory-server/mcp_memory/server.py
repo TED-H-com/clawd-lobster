@@ -1,7 +1,7 @@
 """
 Clawd-Lobster MCP Memory Server: unified memory interface for AI agents.
 
-Tools (28):
+Tools (27):
   Write:    memory_store, memory_record_decision, memory_record_resolved,
             memory_record_question, memory_record_knowledge
   Read:     memory_list, memory_get, memory_get_summary

@@ -32,7 +32,7 @@ Memory Server is the core persistence layer for clawd-lobster. It implements the
 
 ## How It Works
 
-Runs as an always-on MCP server (`python -m mcp_memory.server`) that exposes 27+ tools over MCP.
+Runs as an always-on MCP server (`python -m mcp_memory.server`) that exposes 27 tools over MCP.
 
 **Salience engine:**
 - Access: +5%, Reinforce: +20%, Decay: -1%/day (30-day half-life)
